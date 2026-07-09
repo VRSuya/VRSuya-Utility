@@ -90,20 +90,20 @@ namespace VRSuya.Utility {
 			}
 			EditorGUILayout.HelpBox(GetTranslatedString("String_Null"), MessageType.Info);
 			if (GUILayout.Button(GetTranslatedString("String_Refresh"))) {
-				(target as TextureReplacer).RefreshAvatarProprety();
+				(target as TextureReplacer).RequestGetAvatarMaterials();
 				Repaint();
 			}
 			EditorGUILayout.LabelField(string.Empty, GUI.skin.horizontalSlider);
 			serializedObject.ApplyModifiedProperties();
 			if (GUILayout.Button(GetTranslatedString("String_Replace"))) {
-				(target as TextureReplacer).RequestUpdateAvatarTextures();
-				(target as TextureReplacer).RefreshAvatarProprety();
+				(target as TextureReplacer).RequestUpdateAvatarMaterials();
+				(target as TextureReplacer).RequestGetAvatarMaterials();
 				Repaint();
 			}
 			EditorGUILayout.BeginHorizontal();
 			if (GUILayout.Button(GetTranslatedString("String_Undo"))) {
 				Undo.PerformUndo();
-				(target as TextureReplacer).RefreshAvatarProprety();
+				(target as TextureReplacer).RequestGetAvatarMaterials();
 				Repaint();
 			}
 			if (GUILayout.Button(GetTranslatedString("String_Save"))) {

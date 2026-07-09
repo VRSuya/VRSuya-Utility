@@ -58,70 +58,50 @@ namespace VRSuya.Utility {
 		const string UndoGroupName = "VRSuya TextureReplacer";
 		int UndoGroupIndex;
 
-		void OnEnable() {
-			RefreshAvatarProprety();
+		void Reset() {
+			RequestGetAvatarMaterials();
 		}
 
-		public void RequestUpdateAvatarTextures() {
+		public void RequestUpdateAvatarMaterials() {
 			UndoGroupIndex = UnityUtility.InitializeUndoGroup(UndoGroupName);
-			TargetTextures = CleanupAvatarTextureList();
+			TargetTextures = AvatarTextures.Where(Item => Item.BeforeTexture != Item.AfterTexture).ToList();
 			if (AvatarMaterials.Length > 0 && TargetTextures.Count > 0) ChangeTexture2Ds();
 		}
 
-		public void RefreshAvatarProprety() {
-			if (!AvatarGameObject) {
-				AvatarGameObject = this.gameObject;
-			}
-			AvatarMaterials = GetAvatarMaterials(AvatarGameObject);
+		public void RequestGetAvatarMaterials() {
+			AvatarGameObject = AvatarUtility.GetAvatarGameObject(this.gameObject);
+			AvatarMaterials = AvatarUtility.GetAvatarMaterials(AvatarGameObject);
 			AvatarTextures = GetAvatarTextures(AvatarGameObject);
 		}
 
 		List<TextureExpression> GetAvatarTextures(GameObject TargetGameObject) {
-			AssetProcessor AssetProcessorInstance = new AssetProcessor();
-			TextureExpression[] AvatarTextureExpressions = AssetProcessorInstance.AddAvatarTextureDetails(TargetGameObject);
-			List<TextureExpression> newAvatarTextureExpressions = new List<TextureExpression>();
-			Texture2D[] ExistTexture = AvatarTextureExpressions.Select(AvatarTexture => AvatarTexture.BeforeTexture).Distinct().ToArray();
+			TextureExpression[] AvatarTextureExpressions = AddAvatarTextureDetails(TargetGameObject);
+			List<TextureExpression> NewAvatarTextureExpressions = new List<TextureExpression>();
+			Texture2D[] ExistTexture = AvatarTextureExpressions.Select(Item => Item.BeforeTexture).Distinct().ToArray();
 			for (int TextureIndex = 0; TextureIndex < ExistTexture.Length; TextureIndex++) {
 				MaterialDetail[] TextureMaterials = AvatarTextureExpressions
-					.Where(AvatarTexture => AvatarTexture.BeforeTexture == ExistTexture[TextureIndex])
-					.SelectMany(AvatarTexture => AvatarTexture.OriginMaterial).ToArray();
+					.Where(Item => Item.BeforeTexture == ExistTexture[TextureIndex])
+					.SelectMany(Item => Item.OriginMaterial).ToArray();
 				for (int MaterialIndex = 0; MaterialIndex < TextureMaterials.Length; MaterialIndex++) {
-					if (newAvatarTextureExpressions.Exists(newAvatarTexture => newAvatarTexture.BeforeTexture == ExistTexture[TextureIndex])) {
-						TextureExpression OldAvatarTextureExpression = newAvatarTextureExpressions.Find(newAvatarTexture => newAvatarTexture.BeforeTexture == ExistTexture[TextureIndex]);
-						List<MaterialDetail> newMaterialDetail = OldAvatarTextureExpression.OriginMaterial.Concat(new MaterialDetail[] { TextureMaterials[MaterialIndex] }).ToList();
-						newMaterialDetail.Sort((a, b) => string.Compare(a.OriginMaterial.name, b.OriginMaterial.name, StringComparison.Ordinal));
+					if (NewAvatarTextureExpressions.Exists(Item => Item.BeforeTexture == ExistTexture[TextureIndex])) {
+						TextureExpression OldAvatarTextureExpression = NewAvatarTextureExpressions.Find(Item => Item.BeforeTexture == ExistTexture[TextureIndex]);
+						List<MaterialDetail> NewMaterialDetail = OldAvatarTextureExpression.OriginMaterial.Concat(new MaterialDetail[] { TextureMaterials[MaterialIndex] }).ToList();
+						NewMaterialDetail.Sort((a, b) => string.Compare(a.OriginMaterial.name, b.OriginMaterial.name, StringComparison.Ordinal));
 						TextureExpression NewAvatarTextureExpression = new TextureExpression() {
 							ShowDetails = OldAvatarTextureExpression.ShowDetails,
 							BeforeTexture = OldAvatarTextureExpression.BeforeTexture,
 							AfterTexture = OldAvatarTextureExpression.AfterTexture,
-							OriginMaterial = newMaterialDetail.ToArray()
+							OriginMaterial = NewMaterialDetail.ToArray()
 						};
-						
-						newAvatarTextureExpressions.Remove(OldAvatarTextureExpression);
-						newAvatarTextureExpressions.Add(NewAvatarTextureExpression);
+						NewAvatarTextureExpressions.Remove(OldAvatarTextureExpression);
+						NewAvatarTextureExpressions.Add(NewAvatarTextureExpression);
 					} else {
-						newAvatarTextureExpressions.Add(new TextureExpression(false, ExistTexture[TextureIndex], ExistTexture[TextureIndex], new MaterialDetail[] { TextureMaterials[MaterialIndex] }));
+						NewAvatarTextureExpressions.Add(new TextureExpression(false, ExistTexture[TextureIndex], ExistTexture[TextureIndex], new MaterialDetail[] { TextureMaterials[MaterialIndex] }));
 					}
 				}
 			}
-			newAvatarTextureExpressions.Sort((a, b) => string.Compare(a.BeforeTexture.name, b.BeforeTexture.name, StringComparison.Ordinal));
-			return newAvatarTextureExpressions;
-		}
-
-		Material[] GetAvatarMaterials(GameObject TargetGameObject) {
-			AssetProcessor AssetProcessorInstance = new AssetProcessor();
-			Material[] newAvatarMaterials = AssetProcessorInstance.GetAvatarMaterials(TargetGameObject);
-			return newAvatarMaterials;
-		}
-
-		List<TextureExpression> CleanupAvatarTextureList() {
-			List<TextureExpression> newTargetTextureList = new List<TextureExpression>();
-			foreach (TextureExpression TargetExpression in AvatarTextures) {
-				if (TargetExpression.BeforeTexture != TargetExpression.AfterTexture) {
-					newTargetTextureList.Add(TargetExpression);
-				}
-			}
-			return newTargetTextureList;
+			NewAvatarTextureExpressions.Sort((a, b) => string.Compare(a.BeforeTexture.name, b.BeforeTexture.name, StringComparison.Ordinal));
+			return NewAvatarTextureExpressions;
 		}
 
 		void ChangeTexture2Ds() {
@@ -152,6 +132,47 @@ namespace VRSuya.Utility {
 				}
 			}
 			Debug.Log($"[VRSuya] {ModifiedCount} textures have been replaced");
+		}
+
+		TextureExpression[] AddAvatarTextureDetails(GameObject TargetGameObject) {
+			List<TextureExpression> NewTextureExpressions = new List<TextureExpression>();
+			Material[] AvatarMaterials = AvatarUtility.GetAvatarMaterials(TargetGameObject);
+			if (AvatarMaterials.Length > 0) {
+				NewTextureExpressions = AvatarMaterials
+					.SelectMany(Item => GetMaterialTextureDetails(Item))
+					.Distinct()
+					.OrderBy(Item => Item.BeforeTexture.name)
+					.ToList();
+			}
+			return NewTextureExpressions.ToArray();
+		}
+
+		TextureExpression[] GetMaterialTextureDetails(Material TargetMaterial) {
+			TextureExpression[] MaterialTextureExpressions = new TextureExpression[0];
+			if (TargetMaterial) {
+				Shader TargetShader = TargetMaterial.shader;
+				int PropertyCount = ShaderUtil.GetPropertyCount(TargetShader);
+				for (int Index = 0; Index < PropertyCount; Index++) {
+					if (ShaderUtil.GetPropertyType(TargetShader, Index) == ShaderUtil.ShaderPropertyType.TexEnv) {
+						string PropertyName = ShaderUtil.GetPropertyName(TargetShader, Index);
+						Texture MaterialTexture = TargetMaterial.GetTexture(PropertyName);
+						if (MaterialTexture is Texture2D) {
+							MaterialDetail newMaterialDetail = new MaterialDetail() {
+								OriginMaterial = TargetMaterial,
+								PropertyName = new string[] { PropertyName }
+							};
+							TextureExpression newTextureExpression = new TextureExpression() {
+								ShowDetails = false,
+								BeforeTexture = (Texture2D)MaterialTexture,
+								AfterTexture = (Texture2D)MaterialTexture,
+								OriginMaterial = new MaterialDetail[] { newMaterialDetail }
+							};
+							MaterialTextureExpressions = MaterialTextureExpressions.Concat(new TextureExpression[] { newTextureExpression }).ToArray();
+						}
+					}
+				}
+			}
+			return MaterialTextureExpressions;
 		}
 	}
 }
