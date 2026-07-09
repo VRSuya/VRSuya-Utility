@@ -1,12 +1,12 @@
 {
   "name": "com.vrsuya.utility",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "displayName": "VRSuya - Utility",
   "description": "Utility add-on for the Unity Editor, designed for VRChat",
   "unity": "2019.4",
-  "documentationUrl": "https://github.com/crestudio/VRSuya-Utility/blob/main/README.md",
-  "changelogUrl": "https://github.com/crestudio/VRSuya-Utility/blob/main/README.md",
-  "licensesUrl": "https://github.com/crestudio/VRSuya-Utility/blob/main/LICENSE",
+  "documentationUrl": "https://github.com/VRSuya/VRSuya-Utility/blob/main/README.md",
+  "changelogUrl": "https://github.com/VRSuya/VRSuya-Utility/blob/main/README.md",
+  "licensesUrl": "https://github.com/VRSuya/VRSuya-Utility/blob/main/LICENSE",
   "keywords": [
     "VRSuya",
     "VRChat"
@@ -16,10 +16,10 @@
     "email": "crestudioplus@gmail.com",
     "url": "https://github.com/crestudio"
   },
-  "url": "https://github.com/crestudio/VRSuya-Utility",
-  "repo": "https://server.macchiato.kr/vpm/vpm.json",
+  "url": "https://github.com/VRSuya/VRSuya-Utility",
+  "repo": "https://vrsuya.com/vpm/vpm.json",
   "vpmDependencies": {
     "com.vrchat.avatars": ">=3.0.9",
-	"com.vrsuya.core": ">=0.1.0"
+	  "com.vrsuya.core": ">=1.0.0"
   }
 }
