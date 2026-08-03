@@ -145,7 +145,7 @@ namespace VRSuya.Utility {
 				GUILayout.BeginHorizontal();
 				GUILayout.Space(BorderX);
 				GUILayout.FlexibleSpace();
-				if (GUILayout.Button(GetTranslatedString("String_Close"), GUILayout.Width(100))) {
+				if (GUILayout.Button(GetTranslatedString("String_Close"), GUILayout.Width(100f))) {
 					Close();
 				}
 				GUILayout.FlexibleSpace();

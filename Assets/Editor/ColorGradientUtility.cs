@@ -25,7 +25,7 @@ namespace VRSuya.Utility {
 			EditorGUILayout.LabelField("HEX 컬러 값", EditorStyles.boldLabel);
 			BaseHEXColor = EditorGUILayout.TextField("Base", BaseHEXColor);
 			Shadow3HEXColor = EditorGUILayout.TextField("Shadow", Shadow3HEXColor);
-			if (GUILayout.Button("중간색 추출", GUILayout.Height(30))) {
+			if (GUILayout.Button("중간색 추출", GUILayout.Height(30f))) {
 				GenerateGradients();
 			}
 			EditorGUILayout.Space(10);

@@ -1017,13 +1017,13 @@ namespace VRSuya.Utility {
 			GUILayout.EndHorizontal();
 			GUILayout.BeginHorizontal();
 			GUILayout.FlexibleSpace();
-			TargetAvatarHeight = EditorGUILayout.IntSlider(GUIContent.none, TargetAvatarHeight, 50, 250, GUILayout.Width(200));
+			TargetAvatarHeight = EditorGUILayout.IntSlider(GUIContent.none, TargetAvatarHeight, 50, 250, GUILayout.Width(200f));
 			GUILayout.FlexibleSpace();
 			GUILayout.EndHorizontal();
 			GUILayout.BeginHorizontal();
 			GUILayout.FlexibleSpace();
 			EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
-			if (GUILayout.Button(GetTranslatedString("String_Apply"), GUILayout.Width(100))) {
+			if (GUILayout.Button(GetTranslatedString("String_Apply"), GUILayout.Width(100f))) {
 				AvatarScaler.ScaleAvatarHeight(TargetAvatarHeight);
 				Close();
 			}

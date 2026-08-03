@@ -178,11 +178,11 @@ namespace VRSuya.Utility {
 			GUILayout.Space(BorderX);
 			EditorGUILayout.PropertyField(SerializedTargetMaterials, new GUIContent("적용 대상 머테리얼"), GUILayout.Width(ShadeRectWidth * 1.5f));
 			GUILayout.Space(SpaceWidth);
-			if (GUILayout.Button("적용", GUILayout.Width(ButtonWidth / 2))) {
+			if (GUILayout.Button("적용", GUILayout.Width(ButtonWidth / 2f))) {
 				ColorGenerator.Instance.RequestSetMaterialShadeColor();
 				Repaint();
 			}
-			if (GUILayout.Button("실행 취소", GUILayout.Width(ButtonWidth / 2))) {
+			if (GUILayout.Button("실행 취소", GUILayout.Width(ButtonWidth / 2f))) {
 				Undo.PerformUndo();
 				Repaint();
 			}

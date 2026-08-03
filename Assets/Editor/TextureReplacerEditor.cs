@@ -30,8 +30,8 @@ namespace VRSuya.Utility {
         public override void OnInspectorGUI() {
 			GUIStyle CenteredStyle = new GUIStyle(EditorStyles.label) { alignment = TextAnchor.MiddleCenter };
 			GUILayoutOption PropertyWidth = GUILayout.Width((EditorGUIUtility.currentViewWidth - 15f - 50f - 30f) / 2f);
-			GUILayoutOption ButtonWidth = GUILayout.Width(50);
-			GUILayoutOption ArrowWidth = GUILayout.Width(15);
+			GUILayoutOption ButtonWidth = GUILayout.Width(50f);
+			GUILayoutOption ArrowWidth = GUILayout.Width(15f);
 			TextureReplacer newTextureReplacer = (TextureReplacer)target;
 			serializedObject.Update();
 			LanguageIndex = EditorGUILayout.Popup(GetTranslatedString("String_Language"), LanguageIndex, LanguageOption);
