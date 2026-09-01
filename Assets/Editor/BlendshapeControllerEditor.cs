@@ -4,6 +4,8 @@ using System.Linq;
 using UnityEngine;
 using UnityEditor;
 
+using static VRSuya.Core.Translator;
+
 /*
  * VRSuya Utility
  * Contact : vrsuya@gmail.com // Twitter : https://twitter.com/VRSuya
@@ -28,14 +30,14 @@ namespace VRSuya.Utility {
 
         public override void OnInspectorGUI() {
 			serializedObject.Update();
-			BlendshapeController Instance = (BlendshapeController)target;
-			EditorGUILayout.PropertyField(SerializedTargetSkinnedMeshRenderer, new GUIContent("SkinnedMeshRenderer"));
-			EditorGUILayout.PropertyField(SerializedTargetAnimator, new GUIContent("Animator"));
-			if (Instance.BlendShapeList.Count > 0) {
+			BlendshapeController TargetInstance = (BlendshapeController)target;
+			EditorGUILayout.PropertyField(SerializedTargetSkinnedMeshRenderer, new GUIContent(GetTranslatedString("String_SkinnedMeshRenderer")));
+			EditorGUILayout.PropertyField(SerializedTargetAnimator, new GUIContent(GetTranslatedString("String_Animator")));
+			if (TargetInstance.BlendShapeList.Count > 0) {
 				EditorGUILayout.LabelField(string.Empty, GUI.skin.horizontalSlider);
-				for (int Index = 0; Index < Instance.BlendShapeList.Count; Index++) {
-					string BlendShapeName = Instance.BlendShapeList.Keys.ElementAt(Index);
-					float CurrentValue = Instance.TargetSkinnedMeshRenderer.GetBlendShapeWeight(Instance.BlendShapeList.Values.ElementAt(Index));
+				for (int Index = 0; Index < TargetInstance.BlendShapeList.Count; Index++) {
+					string BlendShapeName = TargetInstance.BlendShapeList.Keys.ElementAt(Index);
+					float CurrentValue = TargetInstance.TargetSkinnedMeshRenderer.GetBlendShapeWeight(TargetInstance.BlendShapeList.Values.ElementAt(Index));
 					if (CurrentValue < 0.0f || CurrentValue > 100.0f) {
 						if (!ExceedLimitBlendshape.Exists(Item => Item == BlendShapeName)) {
 							ExceedLimitBlendshape.Add(BlendShapeName);
@@ -47,15 +49,15 @@ namespace VRSuya.Utility {
 					float NewValue = EditorGUILayout.Slider(CurrentValue, 0, 100);
 					EditorGUILayout.EndHorizontal();
 					if (EditorGUI.EndChangeCheck()) {
-						Undo.RecordObject(Instance.TargetSkinnedMeshRenderer, UndoGroupName);
-						Instance.TargetSkinnedMeshRenderer.SetBlendShapeWeight(Instance.BlendShapeList.Values.ElementAt(Index), NewValue);
-						EditorUtility.SetDirty(Instance.TargetSkinnedMeshRenderer);
+						Undo.RecordObject(TargetInstance.TargetSkinnedMeshRenderer, UndoGroupName);
+						TargetInstance.TargetSkinnedMeshRenderer.SetBlendShapeWeight(TargetInstance.BlendShapeList.Values.ElementAt(Index), NewValue);
+						EditorUtility.SetDirty(TargetInstance.TargetSkinnedMeshRenderer);
 					}
 				}
 			}
 			if (ExceedLimitBlendshape.Count > 0) {
 				EditorGUILayout.LabelField(string.Empty, GUI.skin.horizontalSlider);
-				EditorGUILayout.LabelField("Out-of-Range Blendshape List");
+				EditorGUILayout.LabelField(GetTranslatedString("String_OutofRangeBlendshape"));
 				EditorGUI.indentLevel++;
 				foreach (string ExceedBlendshape in ExceedLimitBlendshape) {
 					EditorGUILayout.LabelField("▶ " + ExceedBlendshape);
@@ -64,7 +66,7 @@ namespace VRSuya.Utility {
 			}
 			EditorGUILayout.LabelField(string.Empty, GUI.skin.horizontalSlider);
 			serializedObject.ApplyModifiedProperties();
-			if (GUILayout.Button("Update List")) {
+			if (GUILayout.Button(GetTranslatedString("String_Update"))) {
 				(target as BlendshapeController).UpdateBlendshapeList();
 				ExceedLimitBlendshape = new List<string>();
 			}

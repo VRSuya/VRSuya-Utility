@@ -9,6 +9,8 @@ using UnityEditor.Animations;
 
 using VRC.SDKBase;
 
+using VRSuya.Core;
+
 /*
  * VRSuya Utility
  * Contact : vrsuya@gmail.com // Twitter : https://twitter.com/VRSuya
@@ -25,106 +27,55 @@ namespace VRSuya.Utility {
 
 		List<string> TargetBlendShapeNames = new List<string>();
 		public Dictionary<string, int> BlendShapeList = new Dictionary<string, int>();
-		readonly string[] dictHeadNames = new string[] { "Body", "Head", "Face" };
 
-		void Start() {
-			if (!TargetSkinnedMeshRenderer) TargetSkinnedMeshRenderer = this.gameObject.GetComponent<SkinnedMeshRenderer>();
-			if (!TargetAnimator) TargetAnimator = this.transform.parent.GetComponent<Animator>();
+		void Reset() {
+			SetVariable();
 			UpdateBlendshapeList();
 		}
 
-		public void UpdateBlendshapeList() {
-			if (!TargetSkinnedMeshRenderer) TargetSkinnedMeshRenderer = this.gameObject.GetComponent<SkinnedMeshRenderer>();
-			if (!TargetAnimator) TargetAnimator = this.transform.parent.GetComponent<Animator>();
-			if (TargetSkinnedMeshRenderer && TargetAnimator) TargetBlendShapeNames = GetAnimationBlendshapeName(TargetAnimator);
-			BlendShapeList = new Dictionary<string, int>();
-			CreateBlendshapeList();
+		void SetVariable() {
+			GameObject AvatarGameObject = AvatarUtility.GetAvatarGameObject(this.gameObject);
+			if (AvatarGameObject) {
+				GameObject HeadGameObject = AvatarUtility.GetHeadGameObject(AvatarGameObject);
+				if (HeadGameObject) TargetSkinnedMeshRenderer = HeadGameObject.GetComponent<SkinnedMeshRenderer>();
+				TargetAnimator = AvatarGameObject.GetComponent<Animator>();
+			}
 		}
 
-		void CreateBlendshapeList() {
+		public void UpdateBlendshapeList() {
+			if (TargetSkinnedMeshRenderer && TargetAnimator) {
+				TargetBlendShapeNames = GetAnimationBlendshapeName();
+				if (TargetBlendShapeNames.Count > 0) {
+					BlendShapeList = CreateBlendshapeList();
+				}
+			}
+		}
+
+		Dictionary<string, int> CreateBlendshapeList() {
+			Dictionary<string, int> NewBlendShapeList = new Dictionary<string, int>();
 			Mesh TargetMesh = TargetSkinnedMeshRenderer.sharedMesh;
 			int BlendShapeCount = TargetMesh.blendShapeCount;
 			for (int Index = 0; Index < BlendShapeCount; Index++) {
-				if (TargetBlendShapeNames.Exists(AnimationBlendShapeName => TargetMesh.GetBlendShapeName(Index) == AnimationBlendShapeName)) {
-					BlendShapeList.Add(TargetMesh.GetBlendShapeName(Index), Index);
+				if (TargetBlendShapeNames.Exists(Item => TargetMesh.GetBlendShapeName(Index) == Item)) {
+					NewBlendShapeList.Add(TargetMesh.GetBlendShapeName(Index), Index);
 				}
 			}
+			return NewBlendShapeList;
 		}
 
-		List<string> GetAnimationBlendshapeName(Animator TargetAnimator) {
-			List<string> newBlendshapeName = new List<string>();
-			if (TargetAnimator) {
-				AnimationClip[] AllAnimationClips = GetAnimationClips((AnimatorController)TargetAnimator.runtimeAnimatorController);
-				foreach (AnimationClip TargetAnimationClip in AllAnimationClips) {
-					foreach (EditorCurveBinding TargetBinding in AnimationUtility.GetCurveBindings(TargetAnimationClip)) {
-						if (Array.Exists(dictHeadNames, HeadMeshName => TargetBinding.path == HeadMeshName)) {
-							if (TargetBinding.type == typeof(SkinnedMeshRenderer)) {
-								string BlendshapeName = TargetBinding.propertyName.Remove(0, 11);
-								if (!newBlendshapeName.Contains(BlendshapeName)) {
-									newBlendshapeName.Add(BlendshapeName);
-								}
-							}
-						}
-					}
-				}
+		List<string> GetAnimationBlendshapeName() {
+			if (!TargetAnimator || !TargetAnimator.runtimeAnimatorController) {
+				return new List<string>();
 			}
-			newBlendshapeName = newBlendshapeName.Distinct().ToList();
-			newBlendshapeName.Sort((a, b) => string.Compare(a, b, StringComparison.Ordinal));
-			return newBlendshapeName;
-		}
-
-		AnimationClip[] GetAnimationClips(AnimatorController TargetAnimatorController) {
-			List<AnimatorStateMachine> RootStateMachines = TargetAnimatorController.layers.Select(AnimationLayer => AnimationLayer.stateMachine).ToList();
-			List<AnimatorStateMachine> AllStateMachines = new List<AnimatorStateMachine>();
-			List<AnimatorState> AllAnimatorState = new List<AnimatorState>();
-			List<AnimationClip> AllAnimationClips = new List<AnimationClip>();
-			foreach (AnimatorStateMachine SubStateMachine in RootStateMachines) {
-				AllStateMachines.AddRange(GetAllStateMachines(SubStateMachine));
-			}
-			foreach (AnimatorStateMachine SubStateMachine in AllStateMachines) {
-				AllAnimatorState.AddRange(GetAllStates(SubStateMachine));
-			}
-			if (AllAnimatorState.Count > 0) {
-				List<Motion> AllMotion = AllAnimatorState.Select(State => State.motion).ToList();
-				foreach (Motion SubMotion in AllMotion) {
-					AllAnimationClips.AddRange(GetAnimationClips(SubMotion));
-				}
-			}
-			AllAnimationClips = AllAnimationClips.Distinct().ToList();
-			AllAnimationClips.Sort((a, b) => string.Compare(a.name, b.name, StringComparison.Ordinal));
-			return AllAnimationClips.ToArray();
-		}
-
-		AnimatorState[] GetAllStates(AnimatorStateMachine TargetStateMachine) {
-			AnimatorState[] States = TargetStateMachine.states.Select(ExistChildState => ExistChildState.state).ToArray();
-			if (TargetStateMachine.stateMachines.Length > 0) {
-				foreach (var TargetChildStatetMachine in TargetStateMachine.stateMachines) {
-					States = States.Concat(GetAllStates(TargetChildStatetMachine.stateMachine)).ToArray();
-				}
-			}
-			return States;
-		}
-
-		AnimatorStateMachine[] GetAllStateMachines(AnimatorStateMachine TargetStateMachine) {
-			AnimatorStateMachine[] StateMachines = new AnimatorStateMachine[] { TargetStateMachine };
-			if (TargetStateMachine.stateMachines.Length > 0) {
-				foreach (var TargetChildStateMachine in TargetStateMachine.stateMachines) {
-					StateMachines = StateMachines.Concat(GetAllStateMachines(TargetChildStateMachine.stateMachine)).ToArray();
-				}
-			}
-			return StateMachines;
-		}
-
-		AnimationClip[] GetAnimationClips(Motion TargetMotion) {
-			AnimationClip[] MotionAnimationClips = new AnimationClip[0];
-			if (TargetMotion is AnimationClip) {
-				MotionAnimationClips = MotionAnimationClips.Concat(new AnimationClip[] { (AnimationClip)TargetMotion }).ToArray();
-			} else if (TargetMotion is BlendTree ChildBlendTree) {
-				foreach (ChildMotion ChildMotion in ChildBlendTree.children) {
-					MotionAnimationClips = MotionAnimationClips.Concat(GetAnimationClips(ChildMotion.motion)).ToArray();
-				}
-			}
-			return MotionAnimationClips;
+			List<string> NewBlendshapeNameList = AnimatorHelper.GetAllAnimationClips(TargetAnimator.runtimeAnimatorController as AnimatorController)
+				.Where(Item => Item != null)
+				.SelectMany(Item => AnimationUtility.GetCurveBindings(Item))
+				.Where(Item => Item.type == typeof(SkinnedMeshRenderer) && AvatarUtility.HeadGameObjectNames.Contains(Item.path))
+				.Select(Item => Item.propertyName.Substring(11))
+				.Distinct()
+				.OrderBy(Item => Item, StringComparer.Ordinal)
+				.ToList();
+			return NewBlendshapeNameList;
 		}
 	}
 }
